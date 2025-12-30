@@ -1,0 +1,38 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+venv/
+env/
+.venv/
+.env/
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# pytest cache
+.pytest_cache/
+.coverage
+htmlcov/
+
+# IDE settings
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# Generated output files (keep example PNGs in root)
+examples/output/*.png
+
+# Local configuration
+*.local
+.env.local
+
