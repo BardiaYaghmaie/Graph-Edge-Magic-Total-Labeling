@@ -1031,7 +1031,7 @@ def run_examples():
             m=m, n=n, k=k, t=t,
             timeout=60,
             visualize=True,
-            save_fig=f"emtl_m{m}_n{n}_k{k}_t{t}.png",
+            save_fig=f"images/output/emtl_m{m}_n{n}_k{k}_t{t}.png",
             verbose=True
         )
         

@@ -56,7 +56,7 @@ def run_single_example(m: int, n: int, k: int, t: int,
         return {'valid': False, 'error': error}
     
     # Solve
-    fig_path = f"examples/output/emtl_m{m}_n{n}_k{k}_t{t}.png" if save_fig else None
+    fig_path = f"images/output/emtl_m{m}_n{n}_k{k}_t{t}.png" if save_fig else None
     
     start_time = time.time()
     result = solve_emtl(
@@ -97,7 +97,7 @@ def run_comprehensive_examples():
     print_header("EMTL SOLVER - COMPREHENSIVE EXAMPLES", "█")
     
     # Create output directory
-    os.makedirs("examples/output", exist_ok=True)
+    os.makedirs("images/output", exist_ok=True)
     
     # Define example categories
     examples = {

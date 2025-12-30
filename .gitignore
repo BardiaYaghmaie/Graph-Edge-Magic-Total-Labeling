@@ -29,7 +29,8 @@ htmlcov/
 *.swo
 .DS_Store
 
-# Generated output files (keep example PNGs in root)
+# Generated output files
+images/output/*.png
 examples/output/*.png
 
 # Local configuration
