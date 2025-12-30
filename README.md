@@ -1,4 +1,4 @@
-# Edge-Magic Total Labeling on Partitioned Bipartite Graphs: A Constraint Programming Approach
+# Edge-Magic Total Labeling on Layered 4-Partite Graphs: A Constraint Programming Approach
 
 <p align="center">
 <em>A Computational Study in Discrete Mathematics and Graph Theory</em>
@@ -10,7 +10,7 @@
 
 We present a complete algorithmic solution for determining the existence of Edge-Magic Total Labelings (EMTLs) on a parameterized family of graphs constructed from three bipartite subgraphs. Given parameters (m, n, k, t), we construct a graph G with vertex set partitioned into four disjoint subsets A, B, C, D of sizes m, n, n, k respectively, where A-B and C-D induce complete bipartite graphs and B-C induces a t-regular bipartite graph. We formulate the EMTL problem as a Constraint Satisfaction Problem (CSP) and employ the CP-SAT solver from Google OR-Tools to determine satisfiability. Our implementation provides constructive solutions with formal verification, achieving solve times under one second for graphs with up to 40 labels. This work contributes both a practical solver and a framework for systematic investigation of EMTL existence on structured graph families.
 
-**Keywords:** Edge-Magic Total Labeling, Graph Labeling, Constraint Satisfaction Problem, Bipartite Graphs, Combinatorial Optimization, CP-SAT Solver
+**Keywords:** Edge-Magic Total Labeling, Graph Labeling, Constraint Satisfaction Problem, Layered Graphs, 4-Partite Graphs, Combinatorial Optimization, CP-SAT Solver
 
 ---
 
