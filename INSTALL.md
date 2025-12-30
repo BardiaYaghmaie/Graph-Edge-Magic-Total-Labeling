@@ -20,11 +20,18 @@ source venv/bin/activate  # Windows: venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
+> ⚠️ **Important**: Always activate the virtual environment before running any commands:
+> ```bash
+> source venv/bin/activate  # macOS/Linux
+> venv\Scripts\activate     # Windows
+> ```
+
 ## Running the Solver
 
 ### Command Line
 
 ```bash
+# Make sure venv is activated!
 python emtl_solver.py
 ```
 
@@ -42,6 +49,7 @@ if result.exists:
 ## Web Interface
 
 ```bash
+# Make sure venv is activated!
 streamlit run web/app.py
 ```
 Open http://localhost:8501 in your browser.
@@ -49,18 +57,22 @@ Open http://localhost:8501 in your browser.
 ## Jupyter Notebook
 
 ```bash
+# Make sure venv is activated!
 jupyter notebook notebooks/EMTL_Tutorial.ipynb
 ```
 
 ## Running Tests
 
 ```bash
+# Make sure venv is activated!
 pytest tests/ -v
 ```
 
 ## Examples
 
 ```bash
+# Make sure venv is activated!
+
 # Run comprehensive examples
 python examples/run_examples.py
 
