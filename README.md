@@ -566,10 +566,4 @@ f(D1) = 7          f(C0-D1) = 15  [5+15+7=27]
 
 8. **NetworkX.** https://networkx.org/
 
--l
----
-
-<p align="center">
-  <em>Created for research and education in discrete mathematics and graph theory.</em>
-</p>
 
