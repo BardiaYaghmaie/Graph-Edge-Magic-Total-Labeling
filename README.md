@@ -566,29 +566,7 @@ f(D1) = 7          f(C0-D1) = 15  [5+15+7=27]
 
 8. **NetworkX.** https://networkx.org/
 
----
-
-## License
-
-This project is released under the MIT License.
-
-## Contributing
-
-Contributions are welcome! Please feel free to submit issues or pull requests.
-
-## Citation
-
-If you use this code in your research, please cite:
-
-```bibtex
-@software{emtl_solver,
-  title = {Edge-Magic Total Labeling Solver},
-  author = {EMTL Research Implementation},
-  year = {2024},
-  url = {https://github.com/your-repo/emtl-solver}
-}
-```
-
+-l
 ---
 
 <p align="center">
