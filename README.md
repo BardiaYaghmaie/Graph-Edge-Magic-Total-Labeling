@@ -32,9 +32,9 @@ We present a complete algorithmic solution for determining the existence of Edge
 
 ### 1.1 Motivation
 
-Graph labeling problems constitute a fundamental area of research in discrete mathematics with applications spanning network design, coding theory, and cryptography. Since the seminal work of Rosa (1967) on graceful labelings and Kotzig and Rosa (1970) on magic valuations, the field has expanded to encompass hundreds of distinct labeling types, each imposing different structural constraints on the assignment of integers to graph elements.
+Graph labeling problems constitute a fundamental area of research in discrete mathematics with applications spanning network design, coding theory, and cryptography. Since the introduction of graceful labelings and magic valuations in the 1960s-70s, the field has expanded to encompass hundreds of distinct labeling types, each imposing different structural constraints on the assignment of integers to graph elements.
 
-Among these, **Edge-Magic Total Labelings (EMTLs)** occupy a distinguished position due to their elegant mathematical structure and computational complexity. The existence problem for EMTLs is known to be NP-complete in general (Gallian, 2022), yet specific graph families admit polynomial-time solutions or complete characterizations.
+Among these, **Edge-Magic Total Labelings (EMTLs)** occupy a distinguished position due to their elegant mathematical structure and computational complexity. The existence problem for EMTLs is known to be NP-complete in general, yet specific graph families admit polynomial-time solutions or complete characterizations.
 
 ### 1.2 Contribution
 
@@ -264,7 +264,7 @@ Output: VALID or INVALID
 
 ### 5.1 Complexity Considerations
 
-**Theorem 5.1** (Enomoto et al., 1998). *The problem of determining whether an arbitrary graph admits an EMTL is NP-complete.*
+**Theorem 5.1**. *The problem of determining whether an arbitrary graph admits an EMTL is NP-complete.*
 
 For our specific graph family G(m, n, k, t), the complexity remains open. However, the constraint programming approach provides an effective practical solution.
 
