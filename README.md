@@ -24,7 +24,7 @@ We present a complete algorithmic solution for determining the existence of Edge
 6. [Computational Results](#6-computational-results)
 7. [Applications](#7-applications)
 8. [Implementation](#8-implementation)
-9. [References](#9-references)
+9. [Software Dependencies](#9-software-dependencies)
 
 ---
 
@@ -409,37 +409,14 @@ if result.exists:
 
 ---
 
-## 9. References
+## 9. Software Dependencies
 
-### Primary Sources
+This project uses the following open-source tools:
 
-[1] A. Kotzig and A. Rosa, "Magic valuations of finite graphs," *Canadian Mathematical Bulletin*, vol. 13, no. 4, pp. 451–461, 1970.
-
-[2] A. Rosa, "On certain valuations of the vertices of a graph," in *Theory of Graphs: International Symposium*, Rome, 1966, pp. 349–355.
-
-[3] W. D. Wallis, *Magic Graphs*. Boston: Birkhäuser, 2001.
-
-### Survey Literature
-
-[4] J. A. Gallian, "A dynamic survey of graph labeling," *Electronic Journal of Combinatorics*, Dynamic Survey DS6, 25th ed., 2022.
-
-[5] R. M. Figueroa-Centeno, R. Ichishima, and F. A. Muntaner-Batle, "The place of super edge-magic labelings among other classes of labelings," *Discrete Mathematics*, vol. 231, no. 1–3, pp. 153–168, 2001.
-
-### Complexity Results
-
-[6] H. Enomoto, A. S. Lladó, T. Nakamigawa, and G. Ringel, "Super edge-magic graphs," *SUT Journal of Mathematics*, vol. 34, no. 2, pp. 105–109, 1998.
-
-### Textbooks
-
-[7] J. A. Bondy and U. S. R. Murty, *Graph Theory*. London: Springer, 2008.
-
-[8] D. B. West, *Introduction to Graph Theory*, 2nd ed. Upper Saddle River, NJ: Prentice Hall, 2001.
-
-### Software
-
-[9] Google OR-Tools. [Online]. Available: https://developers.google.com/optimization
-
-[10] NetworkX Developers, "NetworkX: Network Analysis in Python." [Online]. Available: https://networkx.org
+- **Google OR-Tools**: Constraint programming solver — https://developers.google.com/optimization
+- **NetworkX**: Graph data structures and algorithms — https://networkx.org
+- **Matplotlib**: Visualization library — https://matplotlib.org
+- **NumPy**: Numerical computing — https://numpy.org
 
 ---
 
