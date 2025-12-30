@@ -11,8 +11,6 @@ import streamlit as st
 import sys
 import os
 import matplotlib.pyplot as plt
-import io
-import base64
 
 # Add parent directory to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -21,6 +19,7 @@ from emtl_solver import (
     solve_emtl,
     GraphParameters,
     SolverStatus,
+    EMTLVisualizer,
 )
 
 # =============================================================================
@@ -35,50 +34,109 @@ st.set_page_config(
 )
 
 # =============================================================================
-# CUSTOM CSS
+# CUSTOM CSS - Clean, Modern Design
 # =============================================================================
 
 st.markdown("""
 <style>
-    .main-header {
-        font-size: 2.5rem;
-        font-weight: bold;
-        color: #1E3A5F;
+    /* Main container */
+    .block-container {
+        padding-top: 2rem;
+        max-width: 1200px;
+    }
+    
+    /* Header styling */
+    .main-title {
+        font-size: 2.8rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
         text-align: center;
         margin-bottom: 0.5rem;
     }
-    .sub-header {
-        font-size: 1.2rem;
-        color: #666;
+    
+    .subtitle {
+        font-size: 1.1rem;
+        color: #6b7280;
         text-align: center;
         margin-bottom: 2rem;
     }
-    .metric-card {
-        background-color: #f0f2f6;
-        border-radius: 10px;
-        padding: 1rem;
+    
+    /* Result cards */
+    .result-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 16px;
+        padding: 2rem;
+        color: white;
         text-align: center;
-    }
-    .success-box {
-        background-color: #d4edda;
-        border: 1px solid #c3e6cb;
-        border-radius: 5px;
-        padding: 1rem;
         margin: 1rem 0;
     }
-    .error-box {
-        background-color: #f8d7da;
-        border: 1px solid #f5c6cb;
-        border-radius: 5px;
-        padding: 1rem;
+    
+    .result-card h2 {
+        font-size: 1.8rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .magic-number {
+        font-size: 4rem;
+        font-weight: 700;
         margin: 1rem 0;
     }
-    .info-box {
-        background-color: #e7f3ff;
-        border: 1px solid #b6d4fe;
-        border-radius: 5px;
-        padding: 1rem;
+    
+    .result-card p {
+        opacity: 0.9;
+    }
+    
+    /* Error/Info cards */
+    .error-card {
+        background: linear-gradient(135deg, #f87171 0%, #dc2626 100%);
+        border-radius: 16px;
+        padding: 2rem;
+        color: white;
+        text-align: center;
         margin: 1rem 0;
+    }
+    
+    .info-card {
+        background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
+        border-radius: 16px;
+        padding: 2rem;
+        color: white;
+        text-align: center;
+        margin: 1rem 0;
+    }
+    
+    /* Sidebar styling */
+    .sidebar .sidebar-content {
+        background-color: #f8fafc;
+    }
+    
+    /* Hide streamlit branding */
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    
+    /* Button styling */
+    .stButton > button {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        padding: 0.75rem 2rem;
+        font-size: 1.1rem;
+        font-weight: 600;
+        border-radius: 12px;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    
+    .stButton > button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+    
+    /* Expander styling */
+    .streamlit-expanderHeader {
+        font-weight: 600;
+        color: #374151;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -87,276 +145,179 @@ st.markdown("""
 # HEADER
 # =============================================================================
 
-st.markdown('<p class="main-header">🔢 Edge-Magic Total Labeling Solver</p>', 
-            unsafe_allow_html=True)
-st.markdown('<p class="sub-header">Interactive tool for finding EMTLs on partitioned graphs</p>', 
-            unsafe_allow_html=True)
+st.markdown('<h1 class="main-title">Edge-Magic Total Labeling</h1>', unsafe_allow_html=True)
+st.markdown('<p class="subtitle">Find magic labelings for partitioned graphs using constraint programming</p>', unsafe_allow_html=True)
 
 # =============================================================================
-# SIDEBAR - PARAMETERS
+# SIDEBAR - CLEAN PARAMETER INPUT
 # =============================================================================
 
-st.sidebar.header("📊 Graph Parameters")
-
-st.sidebar.markdown("""
-**Graph Structure:**
-- A ↔ B: Complete bipartite K_{m,n}
-- B ↔ C: t-regular bipartite
-- C ↔ D: Complete bipartite K_{n,k}
-""")
-
-st.sidebar.markdown("---")
-
-# Parameter inputs
-m = st.sidebar.number_input(
-    "**m** (vertices in set A)", 
-    min_value=1, max_value=10, value=2,
-    help="Number of vertices in partition A"
-)
-
-n = st.sidebar.number_input(
-    "**n** (vertices in sets B and C)", 
-    min_value=1, max_value=10, value=2,
-    help="Number of vertices in partitions B and C"
-)
-
-k = st.sidebar.number_input(
-    "**k** (vertices in set D)", 
-    min_value=1, max_value=10, value=2,
-    help="Number of vertices in partition D"
-)
-
-t = st.sidebar.number_input(
-    "**t** (B-C regularity)", 
-    min_value=0, max_value=n, value=min(1, n),
-    help=f"Regularity degree of B-C subgraph (0 ≤ t ≤ n={n})"
-)
-
-st.sidebar.markdown("---")
-
-# Advanced options
-st.sidebar.header("⚙️ Solver Options")
-
-timeout = st.sidebar.slider(
-    "Timeout (seconds)",
-    min_value=5, max_value=120, value=30,
-    help="Maximum time to search for a solution"
-)
-
-# =============================================================================
-# MAIN CONTENT
-# =============================================================================
-
-# Create two columns
-col1, col2 = st.columns([1, 1])
-
-with col1:
-    st.header("📈 Graph Statistics")
+with st.sidebar:
+    st.header("⚙️ Parameters")
     
-    # Calculate statistics
-    params = GraphParameters(m=m, n=n, k=k, t=t)
-    is_valid, error_msg = params.validate()
+    st.markdown("---")
     
-    if is_valid:
-        # Display metrics
-        metric_col1, metric_col2, metric_col3 = st.columns(3)
-        
-        with metric_col1:
-            st.metric("Vertices |V|", params.num_vertices)
-        with metric_col2:
-            st.metric("Edges |E|", params.num_edges)
-        with metric_col3:
-            st.metric("Labels Needed", params.total_labels)
-        
-        # Edge breakdown
-        st.subheader("Edge Distribution")
-        edge_data = {
-            "A-B (complete)": m * n,
-            "B-C (t-regular)": n * t,
-            "C-D (complete)": n * k,
-        }
-        
-        for edge_type, count in edge_data.items():
-            st.write(f"- **{edge_type}**: {count} edges")
-    else:
-        st.error(f"⚠️ Invalid parameters: {error_msg}")
-
-with col2:
-    st.header("🎯 Solve EMTL")
+    # Simple parameter inputs with clear descriptions
+    m = st.number_input(
+        "m — Vertices in set A", 
+        min_value=1, max_value=10, value=2,
+        help="Size of the first partition"
+    )
     
-    if is_valid:
-        if st.button("🚀 Find EMTL", type="primary", use_container_width=True):
-            with st.spinner("Searching for Edge-Magic Total Labeling..."):
-                # Solve
-                result = solve_emtl(
-                    m=m, n=n, k=k, t=t,
-                    timeout=timeout,
-                    visualize=False,
-                    verbose=False
-                )
-            
-            # Store result in session state
-            st.session_state['result'] = result
-            st.session_state['params'] = (m, n, k, t)
+    n = st.number_input(
+        "n — Vertices in sets B & C", 
+        min_value=1, max_value=10, value=2,
+        help="Size of the middle partitions"
+    )
+    
+    k = st.number_input(
+        "k — Vertices in set D", 
+        min_value=1, max_value=10, value=2,
+        help="Size of the last partition"
+    )
+    
+    t = st.number_input(
+        "t — B↔C regularity", 
+        min_value=0, max_value=int(n), value=min(1, int(n)),
+        help=f"Each vertex in B connects to exactly t vertices in C (max {n})"
+    )
+    
+    st.markdown("---")
+    
+    timeout = st.slider(
+        "⏱️ Timeout (seconds)",
+        min_value=5, max_value=120, value=30
+    )
+    
+    st.markdown("---")
+    
+    # Quick explanation
+    with st.expander("📖 What is this?"):
+        st.markdown("""
+        **Edge-Magic Total Labeling** assigns numbers to vertices and edges 
+        so that every edge has the same "magic sum":
+        
+        `vertex₁ + edge + vertex₂ = k`
+        
+        **Graph Structure:**
+        - A ↔ B: Fully connected
+        - B ↔ C: Each vertex has t connections  
+        - C ↔ D: Fully connected
+        """)
 
 # =============================================================================
-# RESULTS SECTION
+# MAIN CONTENT - SOLVE BUTTON
+# =============================================================================
+
+# Validate parameters
+params = GraphParameters(m=int(m), n=int(n), k=int(k), t=int(t))
+is_valid, error_msg = params.validate()
+
+if not is_valid:
+    st.error(f"❌ Invalid parameters: {error_msg}")
+else:
+    # Center the solve button
+    col1, col2, col3 = st.columns([1, 2, 1])
+    with col2:
+        solve_clicked = st.button("🔍 Find Magic Labeling", use_container_width=True)
+    
+    if solve_clicked:
+        with st.spinner("Searching..."):
+            result = solve_emtl(
+                m=int(m), n=int(n), k=int(k), t=int(t),
+                timeout=timeout,
+                visualize=False,
+                verbose=False
+            )
+        st.session_state['result'] = result
+
+# =============================================================================
+# RESULTS DISPLAY
 # =============================================================================
 
 if 'result' in st.session_state:
     result = st.session_state['result']
     
     st.markdown("---")
-    st.header("📋 Results")
     
     if result.exists:
+        # Success - Show magic constant prominently
         st.markdown(f"""
-        <div class="success-box">
-            <h3>✅ EMTL Found!</h3>
-            <p><strong>Magic Constant k = {result.magic_constant}</strong></p>
-            <p>Solved in {result.solve_time:.3f} seconds</p>
+        <div class="result-card">
+            <h2>✨ Magic Labeling Found!</h2>
+            <div class="magic-number">{result.magic_constant}</div>
+            <p>Magic Constant (k)</p>
+            <p style="margin-top: 1rem; font-size: 0.9rem;">
+                Solved in {result.solve_time:.3f}s · 
+                {result.graph.number_of_nodes()} vertices · 
+                {result.graph.number_of_edges()} edges
+            </p>
         </div>
         """, unsafe_allow_html=True)
         
-        # Create tabs for different views
-        tab1, tab2, tab3 = st.tabs(["🖼️ Visualization", "📊 Vertex Labels", "🔗 Edge Labels"])
+        # Visualization
+        st.subheader("📊 Graph Visualization")
         
-        with tab1:
-            # Generate visualization
-            from emtl_solver import EMTLVisualizer
-            
-            fig = EMTLVisualizer.visualize(result, figsize=(12, 8), show=False)
-            st.pyplot(fig)
-            plt.close(fig)
-            
-        with tab2:
-            st.subheader("Vertex Labels")
-            
-            # Create columns for each partition
-            v_cols = st.columns(4)
-            partitions = ['A', 'B', 'C', 'D']
-            
-            for i, partition in enumerate(partitions):
-                with v_cols[i]:
-                    st.markdown(f"**Set {partition}**")
-                    for v in result.vertex_sets[partition]:
-                        label = result.vertex_labels[v]
-                        st.write(f"{v} → **{label}**")
+        fig = EMTLVisualizer.visualize(result, figsize=(14, 9), show=False)
+        st.pyplot(fig)
+        plt.close(fig)
         
-        with tab3:
-            st.subheader("Edge Labels (with verification)")
+        # Details in expanders
+        with st.expander("🏷️ View All Labels"):
+            col1, col2 = st.columns(2)
             
-            # Group edges by type
-            edge_groups = {'A-B': [], 'B-C': [], 'C-D': []}
+            with col1:
+                st.markdown("**Vertex Labels:**")
+                for partition in ['A', 'B', 'C', 'D']:
+                    vertices = result.vertex_sets.get(partition, [])
+                    if vertices:
+                        labels = [f"{v}={result.vertex_labels[v]}" for v in sorted(vertices)]
+                        st.write(f"Set {partition}: " + ", ".join(labels))
             
-            for (u, v) in sorted(result.graph.edges()):
-                pu, pv = u[0], v[0]
-                label = result.edge_labels[(u, v)]
-                total = result.vertex_labels[u] + label + result.vertex_labels[v]
-                
-                if pu == 'A' or pv == 'A':
-                    edge_groups['A-B'].append((u, v, label, total))
-                elif pu == 'D' or pv == 'D':
-                    edge_groups['C-D'].append((u, v, label, total))
-                else:
-                    edge_groups['B-C'].append((u, v, label, total))
+            with col2:
+                st.markdown("**Edge Labels:**")
+                for (u, v) in sorted(result.graph.edges())[:15]:
+                    label = result.edge_labels[(u, v)]
+                    st.write(f"{u}—{v} = {label}")
+                if result.graph.number_of_edges() > 15:
+                    st.write(f"... and {result.graph.number_of_edges() - 15} more edges")
+        
+        with st.expander("✓ Verify Magic Property"):
+            st.markdown("Every edge sums to the same magic constant:")
             
-            for group_name, edges in edge_groups.items():
-                if edges:
-                    st.markdown(f"**{group_name} Edges:**")
-                    for u, v, label, total in edges:
-                        vu = result.vertex_labels[u]
-                        vv = result.vertex_labels[v]
-                        st.write(f"  {u}—{v}: **{label}** [{vu} + {label} + {vv} = {total}]")
+            verified = []
+            for (u, v) in sorted(result.graph.edges())[:10]:
+                lu = result.vertex_labels[u]
+                le = result.edge_labels[(u, v)]
+                lv = result.vertex_labels[v]
+                total = lu + le + lv
+                verified.append(f"`{lu} + {le} + {lv} = {total}`")
+            
+            st.write(" · ".join(verified))
+            
+            if result.graph.number_of_edges() > 10:
+                st.write(f"✓ All {result.graph.number_of_edges()} edges verified")
     
     elif result.status == SolverStatus.INFEASIBLE:
         st.markdown("""
-        <div class="error-box">
-            <h3>❌ No EMTL Exists</h3>
-            <p>The solver has proven that no Edge-Magic Total Labeling exists for this graph configuration.</p>
+        <div class="error-card">
+            <h2>❌ No Solution Exists</h2>
+            <p>It's mathematically proven that no magic labeling exists for this configuration.</p>
+            <p style="margin-top: 1rem;">Try different parameter values.</p>
         </div>
         """, unsafe_allow_html=True)
-        
+    
     elif result.status == SolverStatus.TIMEOUT:
         st.markdown(f"""
-        <div class="info-box">
-            <h3>⏱️ Solver Timeout</h3>
-            <p>Could not determine if EMTL exists within {timeout} seconds.</p>
-            <p>Try increasing the timeout or using smaller parameters.</p>
+        <div class="info-card">
+            <h2>⏱️ Time Limit Reached</h2>
+            <p>Couldn't find a solution within {timeout} seconds.</p>
+            <p style="margin-top: 1rem;">Try smaller parameters or increase the timeout.</p>
         </div>
         """, unsafe_allow_html=True)
     
     else:
-        st.markdown(f"""
-        <div class="error-box">
-            <h3>⚠️ Error</h3>
-            <p>Status: {result.status.value}</p>
-            <p>{result.message}</p>
-        </div>
-        """, unsafe_allow_html=True)
-
-# =============================================================================
-# INFORMATION SECTION
-# =============================================================================
-
-st.markdown("---")
-
-with st.expander("ℹ️ About Edge-Magic Total Labeling"):
-    st.markdown("""
-    ### What is an Edge-Magic Total Labeling?
-    
-    An **Edge-Magic Total Labeling (EMTL)** of a graph G = (V, E) is a bijection:
-    
-    $$f: V \\cup E \\rightarrow \\{1, 2, \\ldots, |V| + |E|\\}$$
-    
-    such that for every edge $uv \\in E$:
-    
-    $$f(u) + f(uv) + f(v) = k$$
-    
-    where $k$ is a constant called the **magic constant**.
-    
-    ### Graph Structure
-    
-    This solver works with graphs having four vertex partitions:
-    
-    | Set | Size | Description |
-    |-----|------|-------------|
-    | A | m | Connected to all of B |
-    | B | n | Connected to A (complete) and C (t-regular) |
-    | C | n | Connected to B (t-regular) and D (complete) |
-    | D | k | Connected to all of C |
-    
-    ### Applications
-    
-    - **Network Design**: Balancing load across connections
-    - **Scheduling**: Fair resource allocation
-    - **Cryptography**: Secret sharing schemes
-    - **Coding Theory**: Error-correcting codes
-    """)
-
-with st.expander("🔧 Algorithm Details"):
-    st.markdown("""
-    ### Constraint Programming Approach
-    
-    The EMTL problem is solved using **Constraint Satisfaction Programming (CSP)**:
-    
-    **Variables:**
-    - One variable for each vertex label: $x_v \\in \\{1, ..., |V|+|E|\\}$
-    - One variable for each edge label: $x_e \\in \\{1, ..., |V|+|E|\\}$
-    - One variable for magic constant: $k$
-    
-    **Constraints:**
-    1. **ALL-DIFFERENT**: All labels must be distinct (bijection)
-    2. **MAGIC SUM**: For each edge $(u,v)$: $x_u + x_{(u,v)} + x_v = k$
-    
-    ### Solver: Google OR-Tools CP-SAT
-    
-    We use Google's CP-SAT solver which employs:
-    - Lazy clause generation
-    - Clause learning from conflicts
-    - Multi-threaded parallel search
-    - Efficient constraint propagation
-    """)
+        st.error(f"Error: {result.status.value} - {result.message}")
 
 # =============================================================================
 # FOOTER
@@ -364,9 +325,7 @@ with st.expander("🔧 Algorithm Details"):
 
 st.markdown("---")
 st.markdown("""
-<div style="text-align: center; color: #666; font-size: 0.9rem;">
-    <p>EMTL Solver v2.0 | Built with Streamlit & OR-Tools</p>
-    <p>For research and education in discrete mathematics and graph theory</p>
+<div style="text-align: center; color: #9ca3af; font-size: 0.85rem; padding: 1rem;">
+    EMTL Solver · Built with OR-Tools & Streamlit
 </div>
 """, unsafe_allow_html=True)
-
