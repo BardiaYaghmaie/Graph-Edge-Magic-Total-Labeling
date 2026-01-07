@@ -18,6 +18,8 @@ source venv/bin/activate  # Windows: venv\Scripts\activate
 
 # 3. Install dependencies
 pip install -r requirements.txt
+# OR install as a package (recommended)
+pip install .
 ```
 
 > ⚠️ **Important**: Always activate the virtual environment before running any commands:

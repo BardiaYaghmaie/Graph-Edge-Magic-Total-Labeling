@@ -548,6 +548,20 @@ class TestEdgeCases:
         # Very small graph
         assert result.exists is True  # Should definitely find EMTL
 
+    def test_proven_infeasible_graph(self):
+        """
+        Test a graph mathematically proven to be infeasible.
+        
+        Case: m=1, n=1, k=1, t=0
+        Edges: 2 (A-B, C-D), Vertices: 4
+        Total labels: {1, 2, 3, 4, 5, 6}
+        Sum of all labels = 21
+        Sum of edges = 2k
+        2k = 21 => k = 10.5 (impossible for integer k)
+        """
+        result = solve_emtl(m=1, n=1, k=1, t=0, visualize=False, verbose=False)
+        assert result.status == SolverStatus.INFEASIBLE
+
 
 # =============================================================================
 # PERFORMANCE TESTS (Optional - can be skipped in CI)
