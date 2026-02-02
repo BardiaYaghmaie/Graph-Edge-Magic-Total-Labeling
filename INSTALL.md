@@ -16,11 +16,15 @@ cd Graph-Edge-Magic-Total-Labeling
 python3 -m venv venv
 source venv/bin/activate  # Windows: venv\Scripts\activate
 
-# 3. Install dependencies
-pip install -r requirements.txt
+# 3. Upgrade pip (recommended)
+python -m pip install --upgrade pip
 
-# Optional (recommended): install as a package so `import emtl_solver` works anywhere
+# 4. Install the project (recommended)
+# - installs core dependencies (OR-Tools, NetworkX, Matplotlib, Streamlit, ...)
 pip install -e .
+
+# 5. Install dev/testing/notebook extras (optional, but recommended if you will run tests)
+pip install -e ".[dev]"
 ```
 
 > ⚠️ **Important**: Always activate the virtual environment before running any commands:
@@ -69,6 +73,38 @@ jupyter notebook notebooks/EMTL_Tutorial.ipynb
 ```bash
 # Make sure venv is activated!
 pytest tests/ -v
+```
+
+## Troubleshooting: pip timeouts / slow networks
+
+If you see errors like `ReadTimeoutError` while installing (common on slow connections),
+re-run installs with a larger timeout and more retries:
+
+```bash
+pip install --default-timeout=120 --retries=10 -e .
+pip install --default-timeout=120 --retries=10 -e ".[dev]"
+```
+
+## Troubleshooting: SSL / corporate proxy networks
+
+If you see SSL errors such as `SSLError`, `SSL_ERROR_SYSCALL`, or `UNEXPECTED_EOF_WHILE_READING`,
+your network may be blocking or intercepting HTTPS traffic to PyPI.
+
+Things to try:
+
+- **Try a different network** (hotspot/home Wi‑Fi) or disable VPN/proxy temporarily.
+- **Use your organization’s approved PyPI mirror** (if provided), e.g.:
+
+```bash
+pip install -e . --index-url <YOUR_MIRROR_URL>
+pip install -e ".[dev]" --index-url <YOUR_MIRROR_URL>
+```
+
+- **If your proxy uses a custom CA certificate**, configure pip to trust it (ask IT for the CA bundle):
+
+```bash
+export REQUESTS_CA_BUNDLE=/path/to/your-ca-bundle.pem
+pip install -e .
 ```
 
 ## Examples
