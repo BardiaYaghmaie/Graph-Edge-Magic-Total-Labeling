@@ -100,6 +100,13 @@ pip install -e . --index-url <YOUR_MIRROR_URL>
 pip install -e ".[dev]" --index-url <YOUR_MIRROR_URL>
 ```
 
+- **Example public mirror** (if standard PyPI is blocked in your network):
+
+```bash
+pip install -e . --index-url https://mirror-pypi.runflare.com/simple
+pip install -e ".[dev]" --index-url https://mirror-pypi.runflare.com/simple
+```
+
 - **If your proxy uses a custom CA certificate**, configure pip to trust it (ask IT for the CA bundle):
 
 ```bash

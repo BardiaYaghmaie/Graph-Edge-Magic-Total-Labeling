@@ -8,7 +8,7 @@ version = "2.0.0"
 description = "Constraint programming solver for Edge-Magic Total Labelings on a parameterized family of 4-partite graphs."
 readme = "README.md"
 requires-python = ">=3.8"
-license = { text = "MIT" }
+license = "MIT"
 authors = [{ name = "Bardia Yaghmaie" }]
 dependencies = [
   "networkx>=3.0",
