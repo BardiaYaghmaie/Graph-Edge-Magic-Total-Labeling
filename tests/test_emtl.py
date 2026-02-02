@@ -467,8 +467,9 @@ class TestSolveEMTL:
                            save_fig=save_path,
                            verbose=False)
         
-        # The file should be created by visualizer
-        # Note: visualize=False means don't call plt.show()
+        # The file should be created even when visualize=False (no GUI).
+        assert os.path.exists(save_path), f"Expected saved figure at {save_path}"
+        assert os.path.getsize(save_path) > 0, "Saved figure file is empty"
 
 
 # =============================================================================

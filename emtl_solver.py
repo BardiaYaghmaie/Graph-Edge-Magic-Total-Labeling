@@ -39,11 +39,11 @@ License: MIT
 import networkx as nx                    # Graph data structures and algorithms
 import matplotlib.pyplot as plt          # Visualization and plotting
 import matplotlib.patches as mpatches    # Custom legend patches
-import numpy as np                       # Numerical operations
 from ortools.sat.python import cp_model  # Google OR-Tools constraint solver
-from typing import Dict, List, Tuple, Optional, Any
+from typing import Dict, List, Tuple, Optional
 from dataclasses import dataclass
 from enum import Enum
+import os
 import warnings
 
 # Suppress matplotlib warnings for cleaner output
@@ -414,7 +414,7 @@ class EMTLSolver:
         - Maximum edge sum: Uses three largest labels
     
     Theoretical bounds:
-        k_min = |V| + 4  (approximate lower bound)
+        k_min = 6  (safe universal lower bound: 1+2+3)
         k_max = 3(|V|+|E|) - 3  (three largest labels)
     
     SOLVER: Google OR-Tools CP-SAT
@@ -501,9 +501,11 @@ class EMTLSolver:
             edge_vars[e] = model.NewIntVar(1, total, f'label_edge_{e}')
         
         # Magic constant variable with theoretical bounds
-        # Lower bound: vertex count + 4 (heuristic)
+        # Lower bound (SAFE): minimum sum of three distinct positive labels is 1+2+3=6.
+        # Note: tighter lower bounds may exist for specific graph families, but must be proven
+        # before being used, otherwise valid solutions could be pruned.
         # Upper bound: sum of three largest possible labels
-        k_min = num_vertices + 4
+        k_min = 6
         k_max = 3 * total - 3  # total + (total-1) + (total-2)
         magic_k = model.NewIntVar(k_min, k_max, 'magic_constant')
         
@@ -890,7 +892,7 @@ def solve_emtl(m: int, n: int, k: int, t: int,
     # =================================================================
     # STEP 2: Construct Graph
     # =================================================================
-    log(f"\n[1/5] Constructing graph...")
+    log("\n[1/5] Constructing graph...")
     log(f"      Expected: |V|={params.num_vertices}, |E|={params.num_edges}")
     
     G, vertex_sets = GraphConstructor.construct(params)
@@ -898,7 +900,7 @@ def solve_emtl(m: int, n: int, k: int, t: int,
     # =================================================================
     # STEP 3: Verify Graph Structure
     # =================================================================
-    log(f"\n[2/5] Verifying graph structure...")
+    log("\n[2/5] Verifying graph structure...")
     
     try:
         GraphConstructor.verify_structure(G, vertex_sets, params)
@@ -917,7 +919,7 @@ def solve_emtl(m: int, n: int, k: int, t: int,
     # =================================================================
     # STEP 4: Solve for EMTL
     # =================================================================
-    log(f"\n[3/5] Searching for Edge-Magic Total Labeling...")
+    log("\n[3/5] Searching for Edge-Magic Total Labeling...")
     log(f"      Variables: {params.total_labels} labels to assign")
     log(f"      Timeout: {timeout} seconds")
     
@@ -928,15 +930,15 @@ def solve_emtl(m: int, n: int, k: int, t: int,
     # STEP 5: Process Results
     # =================================================================
     if status == SolverStatus.FOUND:
-        log(f"\n[4/5] ✓ EMTL FOUND!")
+        log("\n[4/5] ✓ EMTL FOUND!")
         log(f"      Magic constant k = {magic_constant}")
         log(f"      Solve time: {solve_time:.3f} seconds")
         
         # Verify the solution
-        log(f"\n[5/5] Verifying solution...")
+        log("\n[5/5] Verifying solution...")
         try:
             EMTLSolver.verify_labeling(G, magic_constant, vertex_labels, edge_labels)
-            log(f"      ✓ Verification passed!")
+            log("      ✓ Verification passed!")
         except AssertionError as e:
             log(f"      ✗ Verification failed: {e}")
         
@@ -958,13 +960,13 @@ def solve_emtl(m: int, n: int, k: int, t: int,
                     f"[{vertex_labels[u]} + {label} + {vertex_labels[v]} = {total}]")
     
     elif status == SolverStatus.INFEASIBLE:
-        log(f"\n[4/5] ✗ NO EMTL EXISTS (proven infeasible)")
+        log("\n[4/5] ✗ NO EMTL EXISTS (proven infeasible)")
         log(f"      Solve time: {solve_time:.3f} seconds")
     
     else:
-        log(f"\n[4/5] ⚠ SOLVER TIMEOUT")
+        log("\n[4/5] ⚠ SOLVER TIMEOUT")
         log(f"      Could not determine if EMTL exists within {timeout}s")
-        log(f"      Try increasing timeout for larger graphs")
+        log("      Try increasing timeout for larger graphs")
     
     # Create result object
     result = EMTLResult(
@@ -982,9 +984,19 @@ def solve_emtl(m: int, n: int, k: int, t: int,
     # =================================================================
     # STEP 6: Visualization
     # =================================================================
-    if visualize:
-        log(f"\n[Visualization] Creating graph visualization...")
-        EMTLVisualizer.visualize(result, save_path=save_fig, show=True)
+    if visualize or save_fig:
+        log("\n[Visualization] Creating graph visualization...")
+        if save_fig:
+            # Ensure parent directory exists so saving doesn't fail on a fresh checkout.
+            parent_dir = os.path.dirname(os.path.abspath(save_fig))
+            if parent_dir:
+                os.makedirs(parent_dir, exist_ok=True)
+
+        fig = EMTLVisualizer.visualize(result, save_path=save_fig, show=visualize)
+        # Avoid leaking figures in batch runs/tests when we aren't displaying them.
+        if not visualize:
+            plt.close(fig)
+
         if save_fig:
             log(f"      Saved to: {save_fig}")
     

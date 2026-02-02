@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "graph-edge-magic-total-labeling"
+version = "2.0.0"
+description = "Constraint programming solver for Edge-Magic Total Labelings on a parameterized family of 4-partite graphs."
+readme = "README.md"
+requires-python = ">=3.8"
+license = { text = "MIT" }
+authors = [{ name = "Bardia Yaghmaie" }]
+dependencies = [
+  "networkx>=3.0",
+  "matplotlib>=3.7",
+  "numpy>=1.24",
+  "ortools>=9.7",
+  "streamlit>=1.28",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=7.0",
+  "pytest-cov>=4.0",
+  "jupyter>=1.0",
+  "ipykernel>=6.0",
+]
+
+[tool.setuptools]
+py-modules = ["emtl_solver"]
+
+

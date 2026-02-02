@@ -30,9 +30,11 @@ Let $G = (V, E)$ be a graph with $p = |V|$ vertices and $q = |E|$ edges. An **Ed
 
 $$f : V \cup E \to \{1, 2, \dots, p + q\}$$
 
-such that there exists a constant $k \in \mathbb{Z}^+$ (the **magic constant**) where for every edge $uv \in E$:
+such that there exists a constant $\kappa \in \mathbb{Z}^+$ (the **magic constant**) where for every edge $uv \in E$:
 
-$$f(u) + f(uv) + f(v) = k$$
+$$f(u) + f(uv) + f(v) = \kappa$$
+
+**Notation note**: throughout this project, the graph family parameter $k$ denotes $|D|$ (the size of the fourth vertex part), while the EMTL magic constant is denoted by $\kappa$ to avoid symbol collision.
 
 **Key Properties:**
 - **Bijection**: Every integer from 1 to $p+q$ is used exactly once.
@@ -197,22 +199,27 @@ Output: (k, f) if EMTL exists, INFEASIBLE otherwise
 
 ### 5.1 Necessary Condition (Fundamental Identity)
 
-**Proposition**: If $G(m, n, k, t)$ admits an EMTL with magic constant $k$, then:
+**Proposition**: If $G(m, n, k, t)$ admits an EMTL with magic constant $\kappa$, then:
 
-$$k \cdot |E| = \sum_{v \in V} f(v)(\deg(v) - 1) + \sum_{i=1}^{|V|+|E|} i$$
+$$\kappa \cdot |E| = \sum_{v \in V} f(v)(\deg(v) - 1) + \sum_{i=1}^{|V|+|E|} i$$
 
 **Proof**:
-1. Sum the magic equation $f(u) + f(uv) + f(v) = k$ over all edges:
-   $$\sum_{e \in E} (f(u) + f(e) + f(v)) = k \cdot |E|$$
+1. Sum the magic equation $f(u) + f(uv) + f(v) = \kappa$ over all edges:
+   $$\sum_{e \in E} (f(u) + f(e) + f(v)) = \kappa \cdot |E|$$
 2. In this sum, every edge label $f(e)$ appears exactly once. Every vertex label $f(v)$ appears exactly $\deg(v)$ times.
-   $$k \cdot |E| = \sum_{v \in V} \deg(v)f(v) + \sum_{e \in E} f(e)$$
+   $$\kappa \cdot |E| = \sum_{v \in V} \deg(v)f(v) + \sum_{e \in E} f(e)$$
 3. We know that the set of all labels is $\{1, \dots, |V|+|E|\}$. Let $S$ be their sum.
    $$S = \sum_{v \in V} f(v) + \sum_{e \in E} f(e)$$
 4. Substituting $\sum f(e) = S - \sum f(v)$ into the equation from step 2:
-   $$k \cdot |E| = \sum_{v \in V} \deg(v)f(v) + S - \sum_{v \in V} f(v)$$
-   $$k \cdot |E| = \sum_{v \in V} f(v)(\deg(v) - 1) + S$$ $\square$
+   $$\kappa \cdot |E| = \sum_{v \in V} \deg(v)f(v) + S - \sum_{v \in V} f(v)$$
+   $$\kappa \cdot |E| = \sum_{v \in V} f(v)(\deg(v) - 1) + S$$ $\square$
 
-This identity is powerful for bounding $k$.
+This identity is powerful for bounding $\kappa$.
+
+**Closed form for the label sum**: since $f$ is a bijection onto $\{1,\dots,|V|+|E|\}$,
+$$S = \sum_{i=1}^{|V|+|E|} i = \frac{(|V|+|E|)(|V|+|E|+1)}{2}.$$
+
+**Quick infeasibility check in special cases**: if every vertex has degree $1$ (e.g., a disjoint union of edges), then $\deg(v)-1=0$ for all $v$ and the identity reduces to $\kappa |E| = S$, so $\kappa = S/|E|$ must be an integer.
 
 ### 5.2 Degree Sequence of $G(m, n, k, t)$
 
@@ -322,7 +329,7 @@ streamlit run web/app.py
 
 Empirical results from the solver:
 
-| Parameters $(m, n, k, t)$ | $|V|$ | $|E|$ | Search Space | Result | Magic $k$ | Time |
+| Parameters $(m, n, k, t)$ | $|V|$ | $|E|$ | Search Space | Result | Magic $\kappa$ | Time |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
 | $(1, 1, 1, 1)$ | 4 | 3 | $5 \times 10^3$ | **Found** | 12 | 0.01s |
 | $(2, 2, 2, 1)$ | 8 | 10 | $6 \times 10^{15}$ | **Found** | 27 | 0.04s |
@@ -331,7 +338,7 @@ Empirical results from the solver:
 | $(1, 1, 1, 0)$ | 4 | 2 | $720$ | **None** | — | 0.01s |
 
 **Example Solution: G(2, 2, 2, 1)**
-Magic Constant $k = 27$
+Magic Constant $\kappa = 27$
 *   $A$: $\{12, 4\}$
 *   $B$: $\{14, 13\}$
 *   $C$: $\{5, 3\}$

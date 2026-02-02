@@ -18,8 +18,9 @@ source venv/bin/activate  # Windows: venv\Scripts\activate
 
 # 3. Install dependencies
 pip install -r requirements.txt
-# OR install as a package (recommended)
-pip install .
+
+# Optional (recommended): install as a package so `import emtl_solver` works anywhere
+pip install -e .
 ```
 
 > ⚠️ **Important**: Always activate the virtual environment before running any commands:
