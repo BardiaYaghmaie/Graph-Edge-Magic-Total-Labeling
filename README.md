@@ -131,7 +131,7 @@ Variables:
 - $\kappa$ (magic constant).
 
 Constraints:
-- Bijection (AllDifferent): `AllDifferent({x_v : v in V} union {x_e : e in E})`.
+- Bijection (AllDifferent): $\operatorname{AllDifferent}(\{x_v : v \in V\} \cup \{x_e : e \in E\})$.
 - Magic sum: for every edge $(u,v)$, $x_u + x_{(u,v)} + x_v = \kappa$.
 
 Bounds used in code:
