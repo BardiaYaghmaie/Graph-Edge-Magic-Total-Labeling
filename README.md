@@ -113,7 +113,7 @@ polynomial-time algorithm exists; brute force over $N=|V|+|E|$ labels is
 $O(N! \cdot |E|)$ in the worst case, and any exact solver has exponential
 worst-case behavior.
 
-### Circulant Construction for $B$-$C$
+### Circulant Construction for $B$ - $C$
 
 The $t$-regular bipartite subgraph is built with a circulant rule:
 
