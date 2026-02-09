@@ -119,7 +119,7 @@ The $t$-regular bipartite subgraph is built with a circulant rule:
 
 $$E_{BC} = \{(B_i, C_{(i+j) \bmod n}) : i \in [0,n-1], j \in [0,t-1]\}.$$
 
-Each $B_i$ and each $C_j$ has degree $t$ in the $B$-$C$ subgraph.
+Each $B_i$ and each $C_j$ has degree $t$ in the $B$ - $C$ subgraph.
 
 ## CP-SAT Formulation
 
@@ -131,7 +131,7 @@ Variables:
 - $\kappa$ (magic constant).
 
 Constraints:
-- All-different: all vertex and edge labels are distinct.
+- Bijection (AllDifferent): `AllDifferent({x_v : v in V} union {x_e : e in E})`.
 - Magic sum: for every edge $(u,v)$, $x_u + x_{(u,v)} + x_v = \kappa$.
 
 Bounds used in code:
