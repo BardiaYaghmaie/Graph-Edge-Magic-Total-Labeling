@@ -2,7 +2,7 @@
 *Mathematical model, constraint-programming formulation, and reference implementation*
 
 **Author:** Bardia Yaghmaie  
-**Date:** 2026-02-10  
+**Date:** 2026-02-12  
 **Repository:** Graph-Edge-Magic-Total-Labeling
 
 ---
@@ -51,6 +51,14 @@ propagation on integer variables.
 The project is specialized to a structured family of graphs $G(m,n,k,t)$ with
 four vertex partitions and three edge layers, which is large enough to be
 interesting yet structured enough to support systematic experimentation.
+
+The main contributions of this implementation-focused article are:
+
+1. A formal specification of the graph family $G(m,n,k,t)$ and EMTL constraints.
+2. A detailed CP-SAT formulation with propagation and conflict-learning
+   interpretation tailored to this problem.
+3. A direct mapping from mathematical model to executable Python components,
+   including construction, solving, and verification.
 
 ---
 
@@ -139,7 +147,7 @@ These identities are useful in aggregate sum arguments (Section 4).
 
 ---
 
-## 4. Algebraic identities for EMTL (sanity checks)
+## 4. Algebraic identities for EMTL
 
 This section derives a global identity satisfied by every EMTL. It is *not*
 required to solve the instance (the CP model already enforces everything), but
@@ -273,7 +281,7 @@ The constraints create strong coupling:
 - CP-SAT learns *nogoods* (conflict clauses) to avoid revisiting impossible
   partial assignments.
 
-### 5.5. What CP-SAT is (mathematically)
+### 5.5. What CP-SAT is
 
 At the mathematical level, CP-SAT is a procedure for solving a **constraint
 satisfaction problem (CSP)**:
@@ -355,7 +363,7 @@ $x_{uv}=\kappa-x_u-x_v$. So, as the solver fixes vertex labels, many edge-label
 variables become forced (or get very tight bounds), which then interacts with
 AllDifferent.
 
-### 5.7. Propagation from AllDifferent (global reasoning)
+### 5.7. Propagation from AllDifferent
 
 The constraint
 $$
@@ -426,7 +434,7 @@ with the same form), so “bad patterns” repeat across different parts of the
 search. A learned nogood prevents CP-SAT from rediscovering the same pattern
 again under a different exploration order.
 
-### 5.10. An equivalent “vertex-first” view (useful intuition)
+### 5.10. An equivalent “vertex-first” view
 
 From the magic equations,
 $$
@@ -473,7 +481,7 @@ $x\le c$) and then letting propagation derive the consequences. This is why the
 search can be described as a SAT-style tree of Boolean decisions, even though
 the “meaning” of each decision is about integer bounds.
 
-### 5.12. From propagation to learned nogoods (one concrete EMTL pattern)
+### 5.12. From propagation to learned nogoods
 
 Learning requires that propagations come with reasons. Conceptually:
 
@@ -621,3 +629,24 @@ linear constraint per edge), but the resulting combinatorial search can be
 large; CP-SAT’s propagation and conflict-driven learning provide a practical
 exact method for exploring EMTL existence across parameter regimes.
 
+---
+
+## 10. References
+
+The following resources are included as background reading. They are not
+directly cited in the main text; they were used to get familiar with EMTL
+concepts and to see worked examples and standard solver documentation.
+
+1. *Edge Magic Total Labeling of (n, t)-Kites*, **Advances in Computer Science
+   Research**, Proceedings of the International Conference on Mathematics,
+   Geometry, Statistics, and Computation (IC-MaGeStiC 2021). Available at:
+   [Atlantis Press](https://www.atlantis-press.com/proceedings/ic-magestic-21/125970045).
+2. *Edge-magic total labelings*. Available at:
+   [Australasian Journal of Combinatorics PDF](https://ajc.maths.uq.edu.au/pdf/22/ocr-ajc-v22-p177.pdf).
+3. *A case study of an edge-magic total labeling of (a,b)-cycle books*.
+   Available at:
+   [IOP JPCS PDF](https://iopscience.iop.org/article/10.1088/1742-6596/1940/1/012008/pdf).
+4. *Edge-magic total labeling of some graphs*. Available at:
+   [SSRG ICRMIT PDF](https://www.internationaljournalssrg.org/uploads/specialissuepdf/ICRMIT/2018/MTT/ICRMIT-P116.pdf).
+5. Google OR-Tools documentation, *CP-SAT Solver*. Available at:
+   [developers.google.com](https://developers.google.com/optimization/cp/cp_solver).
