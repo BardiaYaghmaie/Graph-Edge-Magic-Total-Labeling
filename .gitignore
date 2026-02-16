@@ -8,6 +8,11 @@ venv/
 env/
 .venv/
 .env/
+bin/
+lib/
+lib64
+pyvenv.cfg
+run/
 
 # Distribution / packaging
 dist/

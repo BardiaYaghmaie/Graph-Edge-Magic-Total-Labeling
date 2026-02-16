@@ -1071,10 +1071,217 @@ def run_examples():
 # =============================================================================
 
 if __name__ == "__main__":
-    """
-    Main entry point for the EMTL solver demonstration.
-    
-    When run directly, this script demonstrates the solver with
-    several example configurations and produces visualizations.
-    """
-    run_examples()
+    # ── ANSI helpers (no dependencies) ──────────────────────────────────
+    _C = {
+        "cyan":    "\033[96m",
+        "green":   "\033[92m",
+        "red":     "\033[91m",
+        "yellow":  "\033[93m",
+        "bold":    "\033[1m",
+        "dim":     "\033[2m",
+        "reset":   "\033[0m",
+    }
+
+    def _clr(text: str, *styles: str) -> str:
+        prefix = "".join(_C.get(s, "") for s in styles)
+        return f"{prefix}{text}{_C['reset']}" if prefix else text
+
+    def _box(lines: list, width: int = 66, color: str = "cyan") -> str:
+        c, r = _C.get(color, ""), _C["reset"]
+        top = f"  {c}╔{'═' * (width - 2)}╗{r}"
+        bot = f"  {c}╚{'═' * (width - 2)}╝{r}"
+        mid = []
+        for ln in lines:
+            # strip ANSI for padding calculation
+            import re
+            visible = re.sub(r"\033\[[0-9;]*m", "", ln)
+            pad = width - 4 - len(visible)
+            mid.append(f"  {c}║{r} {ln}{' ' * max(pad, 0)} {c}║{r}")
+        return "\n".join([top] + mid + [bot])
+
+    def _header() -> None:
+        import os, shutil
+        print("\n" * shutil.get_terminal_size().lines, end="")
+        w = min(shutil.get_terminal_size().columns, 70)
+        bw = max(w, 66)
+        c, r = _C["cyan"], _C["reset"]
+        b = _C["bold"]
+        print()
+        print(f"  {c}╔{'═' * (bw - 2)}╗{r}")
+        title = "EDGE-MAGIC TOTAL LABELING SOLVER"
+        pad = bw - 2 - len(title)
+        lp, rp = pad // 2, pad - pad // 2
+        print(f"  {c}║{r}{b}{c}{' ' * lp}{title}{' ' * rp}{r}{c}║{r}")
+        subtitle = "Constraint-Programming Approach"
+        pad2 = bw - 2 - len(subtitle)
+        lp2, rp2 = pad2 // 2, pad2 - pad2 // 2
+        print(f"  {c}║{r}{_C['dim']}{' ' * lp2}{subtitle}{' ' * rp2}{r}{c}║{r}")
+        print(f"  {c}╚{'═' * (bw - 2)}╝{r}")
+        print()
+
+    def _read_int(prompt: str, lo: int, hi: int | None = None) -> int:
+        while True:
+            try:
+                raw = input(prompt)
+                val = int(raw)
+            except ValueError:
+                print(_clr(f"    ✗ Please enter a valid integer.", "red"))
+                continue
+            except (EOFError, KeyboardInterrupt):
+                raise KeyboardInterrupt
+            if val < lo:
+                print(_clr(f"    ✗ Must be ≥ {lo}.", "red"))
+                continue
+            if hi is not None and val > hi:
+                print(_clr(f"    ✗ Must be ≤ {hi}.", "red"))
+                continue
+            return val
+
+    # ── Main loop ───────────────────────────────────────────────────────
+    try:
+        while True:
+            _header()
+
+            print(_clr("  Graph Parameters", "bold", "cyan"))
+            print(_clr("  ────────────────", "dim"))
+            m = _read_int(f"    {_clr('m', 'bold')} {_clr('(|A|, ≥ 1)', 'dim')}:  ", lo=1)
+            n = _read_int(f"    {_clr('n', 'bold')} {_clr('(|B|=|C|, ≥ 1)', 'dim')}:  ", lo=1)
+            k = _read_int(f"    {_clr('k', 'bold')} {_clr('(|D|, ≥ 1)', 'dim')}:  ", lo=1)
+            t = _read_int(f"    {_clr('t', 'bold')} {_clr(f'(B-C regularity, 0 ≤ t ≤ {n})', 'dim')}:  ", lo=0, hi=n)
+
+            # Timeout (with default)
+            try:
+                raw_timeout = input(f"    {_clr('timeout', 'bold')} {_clr('(seconds, default=60)', 'dim')}:  ").strip()
+            except (EOFError, KeyboardInterrupt):
+                raise KeyboardInterrupt
+            if raw_timeout == "":
+                timeout = 60
+            else:
+                while True:
+                    try:
+                        timeout = int(raw_timeout)
+                        if timeout < 1:
+                            print(_clr(f"    ✗ Must be ≥ 1.", "red"))
+                            raw_timeout = input(f"    {_clr('timeout', 'bold')} {_clr('(seconds, default=60)', 'dim')}:  ").strip()
+                            if raw_timeout == "":
+                                timeout = 60
+                                break
+                            continue
+                        break
+                    except ValueError:
+                        print(_clr(f"    ✗ Please enter a valid integer.", "red"))
+                        try:
+                            raw_timeout = input(f"    {_clr('timeout', 'bold')} {_clr('(seconds, default=60)', 'dim')}:  ").strip()
+                        except (EOFError, KeyboardInterrupt):
+                            raise KeyboardInterrupt
+                        if raw_timeout == "":
+                            timeout = 60
+                            break
+
+            # ── Graph summary ───────────────────────────────────────────
+            v_count = m + 2 * n + k
+            e_count = m * n + n * k + n * t
+            total_labels = v_count + e_count
+            print()
+            print(_box([
+                _clr("Graph Summary", "bold"),
+                f"Vertices |V| = {v_count}   (A={m}, B={n}, C={n}, D={k})",
+                f"Edges    |E| = {e_count}   (A-B={m*n}, B-D={n*k}, B-C={n*t})",
+                f"Total labels = {total_labels}   (|V| + |E|)",
+            ]))
+            print()
+
+            # ── Solve ───────────────────────────────────────────────────
+            print(_clr("  Solving …", "bold", "yellow"))
+            print(_clr("  ─" * 33, "dim"))
+            result = solve_emtl(
+                m=m, n=n, k=k, t=t,
+                timeout=timeout,
+                visualize=True,
+                save_fig=None,
+                verbose=True,
+            )
+            print(_clr("  ─" * 33, "dim"))
+
+            # ── Results ─────────────────────────────────────────────────
+            if result.status == SolverStatus.FOUND:
+                print()
+                header_line = _clr(f"  ✓ EMTL FOUND   (k = {result.magic_constant})", "bold", "green")
+                print(header_line)
+                print(_clr(f"  Solve time: {result.solve_time:.3f}s", "dim"))
+                print()
+
+                # Vertex labels table
+                print(_clr("  Vertex Labels", "bold", "cyan"))
+                print(_clr("  ┌──────────┬───────┐", "cyan"))
+                print(f"  {_C['cyan']}│{_C['reset']} {'Vertex':<8} {_C['cyan']}│{_C['reset']} {'Label':>5} {_C['cyan']}│{_C['reset']}")
+                print(_clr("  ├──────────┼───────┤", "cyan"))
+                for vtx, lbl in sorted(result.vertex_labels.items()):
+                    print(f"  {_C['cyan']}│{_C['reset']} {vtx:<8} {_C['cyan']}│{_C['reset']} {lbl:>5} {_C['cyan']}│{_C['reset']}")
+                print(_clr("  └──────────┴───────┘", "cyan"))
+                print()
+
+                # Edge labels table with verification sums
+                print(_clr("  Edge Labels", "bold", "cyan"))
+                print(_clr("  ┌──────────────────┬───────┬─────────────────────────────┐", "cyan"))
+                print(f"  {_C['cyan']}│{_C['reset']} {'Edge':<16} {_C['cyan']}│{_C['reset']} {'Label':>5} "
+                      f"{_C['cyan']}│{_C['reset']} {'f(u) + f(uv) + f(v)':>27} {_C['cyan']}│{_C['reset']}")
+                print(_clr("  ├──────────────────┼───────┼─────────────────────────────┤", "cyan"))
+                for (u, v), elbl in sorted(result.edge_labels.items()):
+                    fu = result.vertex_labels[u]
+                    fv = result.vertex_labels[v]
+                    s = fu + elbl + fv
+                    color = "green" if s == result.magic_constant else "red"
+                    edge_str = f"{u}—{v}"
+                    sum_expr = f"{fu} + {elbl} + {fv}"
+                    eq_str = f"= {s}"
+                    plain_len = len(sum_expr) + 1 + len(eq_str)
+                    pad = 27 - plain_len
+                    cell = f"{' ' * max(pad, 0)}{sum_expr} {_clr(eq_str, color)}"
+                    print(f"  {_C['cyan']}│{_C['reset']} {edge_str:<16} {_C['cyan']}│{_C['reset']} {elbl:>5} "
+                          f"{_C['cyan']}│{_C['reset']} {cell} {_C['cyan']}│{_C['reset']}")
+                print(_clr("  └──────────────────┴───────┴─────────────────────────────┘", "cyan"))
+                print()
+                print(_clr(f"  Magic constant k = {result.magic_constant}  ✓  All {len(result.edge_labels)} edges verified.", "bold", "green"))
+
+            elif result.status == SolverStatus.INFEASIBLE:
+                print()
+                print(_box([
+                    _clr("✗  No EMTL exists for these parameters.", "bold", "red"),
+                    "",
+                    result.message,
+                ], color="red"))
+
+            elif result.status == SolverStatus.TIMEOUT:
+                print()
+                print(_box([
+                    _clr(f"⏱  Solver timed out ({timeout} s).", "bold", "yellow"),
+                    "",
+                    "Try smaller parameters or increase the timeout.",
+                ], color="yellow"))
+
+            elif result.status == SolverStatus.INVALID_PARAMS:
+                print()
+                print(_box([
+                    _clr("✗  Invalid parameters.", "bold", "red"),
+                    "",
+                    result.message,
+                ], color="red"))
+
+            # ── Try again? ──────────────────────────────────────────────
+            print()
+            try:
+                again = input(_clr("  Try with new parameters? (y/n): ", "bold")).strip().lower()
+            except (EOFError, KeyboardInterrupt):
+                again = "n"
+            if again != "y":
+                break
+
+        print()
+        print(_clr("  Goodbye! ✦", "dim"))
+        print()
+
+    except KeyboardInterrupt:
+        print()
+        print(_clr("\n  Interrupted — goodbye! ✦", "dim"))
+        print()
