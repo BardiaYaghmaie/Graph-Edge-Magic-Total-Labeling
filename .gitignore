@@ -12,7 +12,6 @@ bin/
 lib/
 lib64
 pyvenv.cfg
-run/
 
 # Distribution / packaging
 dist/
