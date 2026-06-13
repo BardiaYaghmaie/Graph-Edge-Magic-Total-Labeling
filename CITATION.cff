@@ -1,0 +1,24 @@
+cff-version: 1.2.0
+message: "If you use this software or refer to this work, please cite it as below."
+title: "Edge-Magic Total Labeling Solver for the Four-Partite Family G(m,n,k,t)"
+abstract: >-
+  A constraint-programming (OR-Tools CP-SAT) solver and accompanying study of
+  edge-magic total labelings on a parameterized family of four-partite graphs
+  G(m,n,k,t), with algebraic necessary conditions, a vertex-determination
+  reduction, a reference implementation, a test suite, and a visualizer.
+type: software
+authors:
+  - family-names: Yaghmaie
+    given-names: Bardia
+    email: yaghmaiebardia@gmail.com
+    affiliation: "Iran University of Science and Technology"
+keywords:
+  - edge-magic total labeling
+  - graph labeling
+  - constraint programming
+  - CP-SAT
+  - OR-Tools
+license: MIT
+repository-code: "https://github.com/BardiaYaghmaie/Graph-Edge-Magic-Total-Labeling"
+version: "2.0.0"
+date-released: "2026-02-12"

@@ -9,7 +9,8 @@ description = "Constraint programming solver for Edge-Magic Total Labelings on a
 readme = "README.md"
 requires-python = ">=3.8"
 license = "MIT"
-authors = [{ name = "Bardia Yaghmaie" }]
+authors = [{ name = "Bardia Yaghmaie", email = "yaghmaiebardia@gmail.com" }]
+keywords = ["graph-labeling", "edge-magic", "constraint-programming", "cp-sat", "or-tools"]
 dependencies = [
   "networkx>=3.0",
   "matplotlib>=3.7",
@@ -25,6 +26,10 @@ dev = [
   "jupyter>=1.0",
   "ipykernel>=6.0",
 ]
+
+[project.urls]
+Homepage = "https://github.com/BardiaYaghmaie/Graph-Edge-Magic-Total-Labeling"
+Repository = "https://github.com/BardiaYaghmaie/Graph-Edge-Magic-Total-Labeling"
 
 [tool.setuptools]
 py-modules = ["emtl_solver"]

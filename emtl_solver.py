@@ -26,7 +26,7 @@ Algorithm:
     - Variables: Labels for each vertex and edge (domain: 1 to |V|+|E|)
     - Constraints: All-different + magic sum constraint for each edge
 
-Author: EMTL Research Implementation
+Author: Bardia Yaghmaie
 Version: 2.0.0
 License: MIT
 ================================================================================

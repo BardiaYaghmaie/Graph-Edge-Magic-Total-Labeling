@@ -40,4 +40,17 @@ examples/output/*.png
 # Local configuration
 *.local
 .env.local
+.claude/
+
+# LaTeX build artifacts (compiled PDFs are committed; aux files are not)
+*.aux
+*.log
+*.out
+*.toc
+*.fls
+*.fdb_latexmk
+*.xdv
+*.synctex.gz
+paper/build_en.log
+paper/build_fa.log
 

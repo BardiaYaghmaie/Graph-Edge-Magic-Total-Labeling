@@ -1,25 +1,31 @@
 # Edge-Magic Total Labeling Solver
 
-A constraint-programming solver for Edge-Magic Total Labelings (EMTL) on a
-parameterized family of 4-partite graphs. It builds the graph, solves EMTL via
-Google OR-Tools CP-SAT, verifies solutions, and optionally visualizes results
-or serves them in a Streamlit app.
+An exact constraint-programming solver for **Edge-Magic Total Labelings (EMTL)** on a
+parameterized family of four-partite graphs `G(m, n, k, t)`. The project constructs the
+graph, casts EMTL existence as a constraint-satisfaction problem, solves it with Google
+OR-Tools **CP-SAT**, independently verifies any labeling it finds, and visualizes the
+result. It ships with a test suite, a batch example runner, and a Streamlit web app.
 
-## Overview
+An **edge-magic total labeling** of a graph `G = (V, E)` is a bijection
+`f: V ∪ E → {1, …, |V|+|E|}` such that some constant `κ` satisfies
+`f(u) + f(uv) + f(v) = κ` for every edge `uv`. The solver returns the magic constant and
+labels when a labeling exists, a proof of infeasibility when none does, or a timeout.
 
-This repo answers the question: for a graph in the family $G(m,n,k,t)$, does an
-Edge-Magic Total Labeling exist, and if so what is the magic constant and the
-labels?
+<p align="center">
+  <img src="images/examples/emtl_m2_n2_k2_t1.png" alt="A computed edge-magic total labeling of G(2,2,2,1)" width="640">
+  <br>
+  <em>A computed EMTL of <code>G(2,2,2,1)</code>: parts A, B, C, D (left to right); every edge sum equals the magic constant.</em>
+</p>
 
-Key features:
-- Graph family construction with a $t$-regular bipartite middle layer.
-- CP-SAT formulation with all-different and magic-sum constraints.
-- Solution verification and visualization.
-- Streamlit web UI and example runners.
+> **Full write-up.** The mathematics — the graph family, the algebraic necessary
+> conditions, the vertex-determination reduction, the CP-SAT model, and experiments —
+> is documented in the accompanying article, available in both English and Persian:
+> [`paper/emtl-article-en.pdf`](paper/emtl-article-en.pdf) ·
+> [`paper/emtl-article-fa.pdf`](paper/emtl-article-fa.pdf).
 
-## Quick Start
+## Quick start
 
-Requirements: Python 3.8+ (3.11 recommended), pip.
+Requirements: Python 3.8+ (3.11 recommended) and `pip`.
 
 ```bash
 python3 -m venv venv
@@ -28,213 +34,84 @@ python -m pip install --upgrade pip
 pip install -e .
 ```
 
-If PyPI is blocked, use a mirror:
-`pip install -e . --index-url https://mirror-pypi.runflare.com/simple`
+If PyPI is blocked, install from a mirror:
 
-Run the solver (demo examples and saved figures):
+```bash
+pip install -e . --index-url https://mirror-pypi.runflare.com/simple
+```
+
+Run the interactive solver:
 
 ```bash
 python emtl_solver.py
 ```
 
-Run the Streamlit app:
+Launch the web app:
 
 ```bash
 streamlit run web/app.py
 ```
 
-Run tests:
+Run the tests:
 
 ```bash
 pytest tests -v
 ```
 
-## Mathematical Model
+## Mathematical model (in brief)
 
-### Graph Family $G(m,n,k,t)$
+The graph `G(m, n, k, t)` has four vertex parts `A, B, C, D` with `|A| = m`, `|B| = |C| = n`,
+`|D| = k`, and three bipartite edge layers:
 
-The vertex set is partitioned into four parts:
+- a complete bipartite layer `K_{m,n}` between `A` and `B`;
+- a `t`-regular bipartite layer between `B` and `C` (built by a circulant rule);
+- a complete bipartite layer `K_{n,k}` between `C` and `D`.
 
-- $A$ with $|A|=m$
-- $B$ with $|B|=n$
-- $C$ with $|C|=n$
-- $D$ with $|D|=k$
+Hence `|V| = m + 2n + k` and `|E| = mn + nt + nk`, with `m, n, k ≥ 1` and `0 ≤ t ≤ n`.
 
-Edges are the union of three subgraphs:
+EMTL existence is modeled as a constraint-satisfaction problem with one integer variable per
+vertex and per edge, an **all-different** constraint enforcing the bijection, one
+**magic-sum** equation `x_u + x_{uv} + x_v = κ` per edge, and the magic constant bounded by
+`6 ≤ κ ≤ 3(|V|+|E|) − 3`. Deciding EMTL is NP-complete for general graphs; this project
+solves the structured family `G(m, n, k, t)` *exactly* with CP-SAT, which returns a
+verified labeling, an infeasibility certificate, or a timeout. See the article (above) for
+the derivations, proofs, and the experimental study.
 
-- Complete bipartite $K_{m,n}$ between $A$ and $B$.
-- Complete bipartite $K_{n,k}$ between $C$ and $D$.
-- A $t$-regular bipartite graph between $B$ and $C$.
+## Project structure
 
-Visual structure:
+| Path | Contents |
+|------|----------|
+| `emtl_solver.py` | Core library: graph construction, CP-SAT model, verification, visualizer, CLI. |
+| `web/app.py` | Streamlit web interface. |
+| `examples/run_examples.py` | Batch runner that saves figures. |
+| `tests/test_emtl.py` | Unit and integration tests. |
+| `notebooks/EMTL_Tutorial.ipynb` | Walkthrough notebook. |
+| `paper/` | The article (LaTeX sources + compiled English/Persian PDFs) and its build script. |
+| `images/examples/` | Pre-rendered example labelings. |
 
-```
-     A            B            C            D
-  (m vertices) (n vertices) (n vertices) (k vertices)
+Key API in `emtl_solver.py`: `GraphParameters`, `GraphConstructor`, `EMTLSolver`
+(`.solve`, `.verify_labeling`), `EMTLVisualizer`, and the end-to-end
+`solve_emtl(m, n, k, t, timeout=...)`.
 
-   +---+         +---+         +---+         +---+
-   |A0 |---------|B0 |.........|C0 |---------|D0 |
-   +---+  \   /  +---+         +---+  \   /  +---+
-           \ /                         \ /
-           / \                         / \
-   +---+  /   \  +---+         +---+  /   \  +---+
-   |A1 |---------|B1 |.........|C1 |---------|D1 |
-   +---+         +---+         +---+         +---+
-   
-       K_{m,n}       t-regular       K_{n,k}
-     (Complete)                    (Complete)
-```
-
-Edge types:
-- Solid lines: complete bipartite (A-B, C-D).
-- Dotted lines: t-regular bipartite (B-C).
-
-Counts:
-
-$$|V| = m + 2n + k$$
-$$|E| = mn + nk + nt$$
-
-Constraints: $m,n,k \ge 1$ and $0 \le t \le n$.
-
-### Edge-Magic Total Labeling (EMTL)
-
-An EMTL is a bijection
-
-$$f: V \cup E \to \{1,2,\dots,|V|+|E|\}$$
-
-such that a constant $\kappa$ exists where for every edge $uv$:
-
-$$f(u) + f(uv) + f(v) = \kappa.$$
-
-Why this is hard (mathematically):
-The decision problem is in NP because a proposed labeling verifies in $O(|E|)$
-time. For general graphs it is NP-complete (hence NP-hard), so unless P=NP no
-polynomial-time algorithm exists; brute force over $N=|V|+|E|$ labels is
-$O(N! \cdot |E|)$ in the worst case, and any exact solver has exponential
-worst-case behavior.
-
-### Circulant Construction for $B$ - $C$
-
-The $t$-regular bipartite subgraph is built with a circulant rule:
-
-$$E_{BC} = \{(B_i, C_{(i+j) \bmod n}) : i \in [0,n-1], j \in [0,t-1]\}.$$
-
-Each $B_i$ and each $C_j$ has degree $t$ in the $B$ - $C$ subgraph.
-
-## CP-SAT Formulation
-
-We pose EMTL as a constraint satisfaction problem (no optimization objective):
-
-Variables:
-- $x_v \in [1, |V|+|E|]$ for each vertex $v$.
-- $x_e \in [1, |V|+|E|]$ for each edge $e$.
-- $\kappa$ (magic constant).
-
-Constraints:
-- Bijection (AllDifferent): ${AllDifferent}(\{x_v : v \in V\} \cup \{x_e : e \in E\})$.
-- Magic sum: for every edge $(u,v)$, $x_u + x_{(u,v)} + x_v = \kappa$.
-
-Bounds used in code:
-
-- $\kappa_{min}=6$ (smallest possible sum of three distinct positive labels).
-- $\kappa_{max}=3(|V|+|E|)-3$ (sum of the three largest labels).
-
-About CP-SAT:
-- OR-Tools CP-SAT combines SAT solving with constraint propagation.
-- It maintains variable domains, prunes infeasible values, and searches with
-  backtracking plus learned conflicts.
-- The solver returns FEASIBLE or OPTIMAL when it finds a solution, INFEASIBLE
-  if it proves none exist, or TIMEOUT if the limit is hit.
-
-We set a time limit and use multiple workers (see `EMTLSolver`).
-
-### How CP-SAT Solves This Model
-
-Propagation:
-- Each constraint narrows variable domains.
-- The all-different constraint enforces a bijection across all labels.
-- Magic-sum equations link vertex and edge labels to a shared $\kappa$.
-
-Conflict learning:
-- When a partial assignment leads to a contradiction, CP-SAT analyzes it.
-- It learns a nogood clause so the same dead end is not revisited.
-
-Search heuristics:
-- The solver automatically chooses variable and value ordering.
-- It uses restarts and a portfolio of strategies to find feasible solutions.
-- Parallel workers explore different parts of the search space when enabled.
-
-### Solver Algorithm (High Level)
-
-```
-Algorithm: SolveEMTL(G, timeout)
-Input:  Graph G = (V, E), time limit T
-Output: (k, f) if EMTL exists, INFEASIBLE or TIMEOUT otherwise
-
-1. Create CP-SAT model M
-2. Create variable x_v in [1, |V|+|E|] for each v in V
-3. Create variable x_e in [1, |V|+|E|] for each e in E
-4. Create variable k in [k_min, k_max]
-5. Add constraint: AllDifferent({x_v} union {x_e})
-6. For each (u, v) in E:
-       Add constraint: x_u + x_(u,v) + x_v = k
-7. status <- Solve(M, timeout=T)
-8. If status in {OPTIMAL, FEASIBLE}:
-       Return (k, {v -> x_v} union {e -> x_e})
-9. Else:
-       Return INFEASIBLE or TIMEOUT
-```
-
-## Implementation Map
-
-Main solver code lives in `emtl_solver.py`:
-
-- `GraphParameters`: validates input and provides |V|, |E|, and label counts.
-- `GraphConstructor`: builds $G(m,n,k,t)$ and can verify its structure.
-- `EMTLSolver`: builds the CP-SAT model, solves it, and verifies solutions.
-- `EMTLResult`: container for the solve outcome and labels.
-- `EMTLVisualizer`: draws the graph and labels using Matplotlib.
-- `solve_emtl(...)`: end-to-end orchestration and optional visualization.
-
-Other relevant files:
-
-- `web/app.py`: Streamlit UI for interactive runs.
-- `examples/run_examples.py`: batch runs with saved figures.
-- `tests/test_emtl.py`: unit and integration tests for construction and solving.
-
-## Visualization
-
-`EMTLVisualizer` renders the graph with a fixed 4-column layout (A, B, C, D),
-color-coded partitions, and edge coloring by subgraph type (A-B, B-C, C-D).
-Vertex labels show both vertex IDs and EMTL labels. Edge labels show EMTL
-labels. A small legend and statistics panel are included in the figure.
-
-Saved figures typically go under `images/output/`.
-
-## Streamlit App
-
-The Streamlit UI allows you to:
-
-- Choose parameters m, n, k, t.
-- Set a solver timeout.
-- Run the solver interactively and view results.
-
-Start it with:
+## Building the article
 
 ```bash
-streamlit run web/app.py
+cd paper && bash build.sh
 ```
 
-## Examples
+The English PDF builds with `pdflatex`; the Persian PDF builds with `xelatex` (xepersian).
+The Persian article uses the **XB Niloofar** font (free, SIL OFL) — install it first, e.g.
+copy `XB Niloofar.ttf` into `~/.local/share/fonts/` and run `fc-cache -f`.
 
-Run curated example sets and save figures:
+## License
 
-```bash
-python examples/run_examples.py
-```
+Released under the [MIT License](LICENSE).
 
-## Tests
+## Citation
 
-```bash
-pytest tests -v
-```
+If you use this work, please cite it via [`CITATION.cff`](CITATION.cff).
+
+## Author
+
+**Bardia Yaghmaie** — Iran University of Science and Technology.
+Bachelor's research project, supervised by Prof. Mehdi Alaeiyan (Algebraic Graph Theory, IUST).
