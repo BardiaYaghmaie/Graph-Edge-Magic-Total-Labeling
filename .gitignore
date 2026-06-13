@@ -40,7 +40,6 @@ examples/output/*.png
 # Local configuration
 *.local
 .env.local
-.claude/
 
 # LaTeX build artifacts (compiled PDFs are committed; aux files are not)
 *.aux

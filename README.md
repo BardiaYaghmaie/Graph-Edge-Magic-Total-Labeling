@@ -72,9 +72,9 @@ Hence `|V| = m + 2n + k` and `|E| = mn + nt + nk`, with `m, n, k ≥ 1` and `0 �
 EMTL existence is modeled as a constraint-satisfaction problem with one integer variable per
 vertex and per edge, an **all-different** constraint enforcing the bijection, one
 **magic-sum** equation `x_u + x_{uv} + x_v = κ` per edge, and the magic constant bounded by
-`6 ≤ κ ≤ 3(|V|+|E|) − 3`. Deciding EMTL is NP-complete for general graphs; this project
+`6 ≤ κ ≤ 3(|V|+|E|) − 3`. No efficient general algorithm for EMTL is known; this project
 solves the structured family `G(m, n, k, t)` *exactly* with CP-SAT, which returns a
-verified labeling, an infeasibility certificate, or a timeout. See the article (above) for
+verified labeling, an infeasibility result, or a timeout. See the article (above) for
 the derivations, proofs, and the experimental study.
 
 ## Project structure
@@ -113,5 +113,5 @@ If you use this work, please cite it via [`CITATION.cff`](CITATION.cff).
 
 ## Author
 
-**Bardia Yaghmaie** — Iran University of Science and Technology.
-Bachelor's research project, supervised by Prof. Mehdi Alaeiyan (Algebraic Graph Theory, IUST).
+**Bardia Yaghmaie** — School of Mathematics and Computer Science, Iran University of Science and Technology (IUST).
+Bachelor's research project, supervised by Prof. Mehdi Alaeiyan (Algebraic Graph Theory).
